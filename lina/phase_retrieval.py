@@ -14,6 +14,9 @@ from prysm.polynomials import (
     hopkins
 )
 
+from scipy.optimize import minimize
+
+
 """Largely taken from poi.phase_retrieval, with modifications to support spectral diversity"""
 class ADPhaseRetireval:
     def __init__(self, amp, amp_dx, efl, wvls, basis, target, img_dx, defocus_waves=0, initial_phase=None):
@@ -31,6 +34,7 @@ class ADPhaseRetireval:
         self.basis = basis
         self.img_dx = img_dx
         self.D = target
+        self.init_phs = phs
         self.phs = phs
         self.zonal = False
         self.defocus = defocus_waves
@@ -49,11 +53,11 @@ class ADPhaseRetireval:
     def update(self, x):
         if not self.zonal:
             if len(x) == 1:
-                phs = np.asarray(self.basis) * np.asarray(x)
+                phs = self.init_phs + np.asarray(self.basis) * np.asarray(x)
             else:
-                phs = np.tensordot(np.asarray(self.basis), np.asarray(x), axes=(0,0))
+                phs = self.init_phs + np.tensordot(np.asarray(self.basis), np.asarray(x), axes=(0,0))
         else:
-            phs = np.zeros(self.amp.shape, dtype=float)
+            phs = self.init_phs + np.zeros(self.amp.shape, dtype=float)
             phs[self.amp_select] = x
         
         I = 0
@@ -74,7 +78,7 @@ class ADPhaseRetireval:
                 output_samples=self.D.shape,
                 shift=(0, 0),
                 method='mdft')
-            I += np.abs(G)**2
+            I += np.abs(G)**2 / len(self.wvls)
         
         E = np.sum((I - self.D)**2)
 
@@ -97,7 +101,7 @@ class ADPhaseRetireval:
 
         for wvl in self.wvls:
 
-            Ibar = 2*(self.I - self.D)
+            Ibar = 2*(self.I - self.D) / len(self.wvls)
             Gbar = 2 * Ibar * self.G
             gbar = focus_fixed_sampling_backprop(
                 wavefunction=Gbar,
