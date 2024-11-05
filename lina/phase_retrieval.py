@@ -14,12 +14,11 @@ from prysm.polynomials import (
     hopkins
 )
 
-from scipy.optimize import minimize
-
 
 """Largely taken from poi.phase_retrieval, with modifications to support spectral diversity"""
 class ADPhaseRetireval:
-    def __init__(self, amp, amp_dx, efl, wvls, basis, target, img_dx, defocus_waves=0, initial_phase=None):
+    def __init__(self, amp, amp_dx, efl, wvls, basis, target, img_dx, defocus_waves=0, 
+                 initial_phase=None,):
         if initial_phase is None:
             phs = np.zeros(amp.shape, dtype=float)
         else:
@@ -55,7 +54,8 @@ class ADPhaseRetireval:
             if len(x) == 1:
                 phs = self.init_phs + np.asarray(self.basis) * np.asarray(x)
             else:
-                phs = self.init_phs + np.tensordot(np.asarray(self.basis), np.asarray(x), axes=(0,0))
+                phs = self.init_phs + np.tensordot(np.asarray(self.basis), 
+                                                   np.asarray(x), axes=(0,0))
         else:
             phs = self.init_phs + np.zeros(self.amp.shape, dtype=float)
             phs[self.amp_select] = x
