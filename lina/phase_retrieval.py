@@ -127,7 +127,7 @@ class ADPhaseRetireval:
             self.abar = abar
             return self.abar
         else:
-            return self.Wbar[self.amp_select]
+            return self.Wbar[self.amp_select]   #   amp_select is the pupil binary mask, or the positive constraint in Fienup effectively
 
     def fg(self, x):
         g = self.rev(x)
@@ -135,8 +135,6 @@ class ADPhaseRetireval:
         self.cost.append(f)
         return f.get(), g.get()
     
-
-
 
 class ParallelADPhaseRetrieval:
 
